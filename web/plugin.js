@@ -9,9 +9,37 @@
     return target;
   }
 
+  function detectPluginOrigin() {
+    if (document.currentScript && document.currentScript.src) {
+      return new URL(document.currentScript.src, window.location.href).origin;
+    }
+
+    var scripts = document.getElementsByTagName('script');
+    for (var i = scripts.length - 1; i >= 0; i--) {
+      var src = scripts[i].src || '';
+      if (src.indexOf('/web/plugin.js') !== -1) {
+        return new URL(src, window.location.href).origin;
+      }
+    }
+
+    return window.location.origin;
+  }
+
+  function resolveWidgetBase(opts) {
+    if (opts.widgetUrl) {
+      return opts.widgetUrl;
+    }
+
+    if (opts.apiBaseUrl) {
+      return new URL('/web/', opts.apiBaseUrl).toString();
+    }
+
+    return detectPluginOrigin() + '/web/';
+  }
+
   function buildIframeSrc(opts) {
-    var base = opts.widgetUrl || '/web/';
-    var url = new URL(base, window.location.origin);
+    var base = resolveWidgetBase(opts);
+    var url = new URL(base, window.location.href);
 
     if (opts.restaurantId) url.searchParams.set('restaurantId', opts.restaurantId);
     if (opts.partySize) url.searchParams.set('partySize', String(opts.partySize));

@@ -29,15 +29,22 @@ Then open:
 
 ```html
 <div id="reservation-plugin-root"></div>
-<script src="https://your-domain.com/web/plugin.js"></script>
+<script src="https://your-reservation-domain.com/web/plugin.js"></script>
 <script>
   ReservationWidget.mount({
     target: '#reservation-plugin-root',
+    apiBaseUrl: 'https://your-reservation-domain.com',
     restaurantId: 'resto-main',
     partySize: 2,
     height: 820
   });
 </script>
+```
+
+Direct booking link option (no embed):
+
+```text
+https://your-reservation-domain.com/web/?restaurantId=resto-main&partySize=2&date=2026-03-15
 ```
 
 ## Admin authentication
