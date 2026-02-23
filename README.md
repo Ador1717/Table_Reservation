@@ -25,6 +25,21 @@ Then open:
 - `http://localhost:8000/web/embed-example.html` (plugin embed demo)
 - `http://localhost:8000/web/admin.html` (admin dashboard demo with reservations, waitlist, analytics)
 
+## Deploy (Render quick setup)
+
+1. Push this repo to GitHub.
+2. In Render, create a new **Blueprint** service and point it to your repo (`render.yaml` included).
+3. Set secrets in Render:
+   - `ADMIN_API_KEY`
+   - `ADMIN_PASSWORD`
+   - `WHATSAPP_WEBHOOK_URL`
+4. Keep `WHATSAPP_RECIPIENT=0617461487` (already prefilled in `render.yaml`, update any time).
+5. Deploy and open:
+   - `https://<your-render-domain>/web/` for booking widget
+   - `https://<your-render-domain>/web/admin.html` for admin
+
+If you are not using Render, run `python3 -m app.server` with the same environment variables.
+
 ## Embedding plugin on your website
 
 ```html

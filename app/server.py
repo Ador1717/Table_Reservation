@@ -295,6 +295,7 @@ class ReservationHandler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    host, port = "0.0.0.0", 8000
+    host = "0.0.0.0"
+    port = int(os.getenv("PORT", "8000"))
     print(f"Serving reservation API and widget at http://{host}:{port}")
     ThreadingHTTPServer((host, port), ReservationHandler).serve_forever()
