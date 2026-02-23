@@ -14,6 +14,8 @@ python -m unittest discover -s tests
 export ADMIN_API_KEY="change-me-admin-key"  # optional fallback key
 export ADMIN_USERNAME="admin"
 export ADMIN_PASSWORD="change-me-admin-password"
+export WHATSAPP_WEBHOOK_URL="https://your-whatsapp-relay.example.com/send"  # required to send WhatsApp summary
+export WHATSAPP_RECIPIENT="+971500000000"  # optional metadata passed to your relay
 python3 -m app.server
 ```
 
@@ -52,6 +54,8 @@ Admin endpoints:
 - `DELETE /reservations/{reservationId}`
 - `GET /waitlist`
 - `GET /analytics`
+- `GET /notifications/whatsapp/config`
+- `POST /notifications/whatsapp/daily-summary`
 - `POST /admin/login` (creates admin session token)
 - `GET /admin/users`
 - `POST /admin/users`
@@ -68,6 +72,8 @@ Public booking endpoints remain open for customer flows (`/availability`, `POST 
 - `POST /waitlist`
 - `GET /waitlist?restaurantId=...&date=YYYY-MM-DD`
 - `GET /analytics?restaurantId=...&date=YYYY-MM-DD`
+- `GET /notifications/whatsapp/config`
+- `POST /notifications/whatsapp/daily-summary`
 - `POST /admin/login`
 - `GET /admin/users`
 - `POST /admin/users`
@@ -89,6 +95,6 @@ If a slot is full, guests can join the waitlist for a desired time. When an acti
 
 ## Next steps
 
-1. Add notification providers (email/SMS/WhatsApp).
+1. Add additional notification channels (email/SMS) if needed; WhatsApp daily summary is now available.
 2. Keep auth simple for now; expand to advanced role/permissions later.
 3. Build mobile app using the same API.

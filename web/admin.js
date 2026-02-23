@@ -9,6 +9,8 @@ const staffUsersBody = document.getElementById('staff-users-body');
 
 const resultEl = document.getElementById('admin-result');
 const authStatusEl = document.getElementById('auth-status');
+const whatsappStatusEl = document.getElementById('whatsapp-status');
+const whatsappButtonEl = document.getElementById('send-whatsapp-summary');
 
 let accessToken = null;
 
@@ -111,6 +113,39 @@ function buildAdminQuery() {
   return new URLSearchParams(fd).toString();
 }
 
+async function loadWhatsappConfig() {
+  const response = await fetch('/notifications/whatsapp/config', { headers: authHeaders() });
+  const data = await response.json();
+  if (!response.ok) {
+    whatsappStatusEl.textContent = 'Unable to read WhatsApp config';
+    return;
+  }
+
+  whatsappStatusEl.textContent = data.enabled
+    ? `Configured${data.recipient ? ` for ${data.recipient}` : ''}`
+    : 'Not configured (set WHATSAPP_WEBHOOK_URL on server).';
+}
+
+async function sendWhatsappSummary() {
+  const payload = {
+    restaurantId: filterForm.elements.restaurantId.value,
+    date: filterForm.elements.date.value,
+  };
+  const response = await fetch('/notifications/whatsapp/daily-summary', {
+    method: 'POST',
+    headers: authHeaders(true),
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  setResult(data);
+
+  if (response.ok) {
+    whatsappStatusEl.textContent = 'Daily summary sent to WhatsApp.';
+  } else {
+    whatsappStatusEl.textContent = data.error || 'Failed to send WhatsApp summary.';
+  }
+}
+
 async function loadReservations() {
   const response = await fetch(`/reservations?${buildAdminQuery()}`, { headers: authHeaders() });
   const data = await response.json();
@@ -178,6 +213,7 @@ async function loadOperationsView() {
     analytics: analyticsResult.data,
     users: staffResult.data.users,
   });
+  await loadWhatsappConfig();
 }
 
 loginForm.addEventListener('submit', async (e) => {
@@ -225,6 +261,10 @@ staffCreateForm.addEventListener('submit', async (e) => {
 filterForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   await loadOperationsView();
+});
+
+whatsappButtonEl.addEventListener('click', async () => {
+  await sendWhatsappSummary();
 });
 
 tableBody.addEventListener('click', async (e) => {

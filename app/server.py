@@ -9,6 +9,7 @@ from urllib.parse import parse_qs, urlparse
 
 from app.auth import AdminSessionManager, get_authorized_admin
 from app.reservation_store import ReservationStore, reservation_to_dict, waitlist_entry_to_dict
+from app.whatsapp import WhatsAppNotifier
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -17,6 +18,9 @@ ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "change-me-admin-key")
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "change-me-admin-password")
 SESSION_MANAGER = AdminSessionManager(ttl_minutes=480)
+WHATSAPP_WEBHOOK_URL = os.getenv("WHATSAPP_WEBHOOK_URL", "")
+WHATSAPP_RECIPIENT = os.getenv("WHATSAPP_RECIPIENT", "")
+WHATSAPP_NOTIFIER = WhatsAppNotifier(WHATSAPP_WEBHOOK_URL, WHATSAPP_RECIPIENT)
 store.ensure_admin_user(ADMIN_USERNAME, ADMIN_PASSWORD, role="admin")
 
 
@@ -105,6 +109,16 @@ class ReservationHandler(BaseHTTPRequestHandler):
             analytics = store.get_daily_analytics(restaurant_id=restaurant_id, date=date)
             return self._send_json(analytics)
 
+        if parsed.path == "/notifications/whatsapp/config":
+            if not self._require_admin():
+                return
+            return self._send_json(
+                {
+                    "enabled": WHATSAPP_NOTIFIER.enabled(),
+                    "recipient": WHATSAPP_RECIPIENT or None,
+                }
+            )
+
         if parsed.path == "/admin/users":
             if not self._require_admin():
                 return
@@ -154,6 +168,38 @@ class ReservationHandler(BaseHTTPRequestHandler):
                 return self._bad_request(str(exc))
 
             return self._send_json({"created": True, "username": username, "role": "admin"}, status=HTTPStatus.CREATED)
+
+        if self.path == "/notifications/whatsapp/daily-summary":
+            if not self._require_admin():
+                return
+            payload = self._read_json_body()
+            restaurant_id = payload.get("restaurantId")
+            date = payload.get("date")
+            if not restaurant_id or not date:
+                return self._bad_request("restaurantId and date are required")
+            if not WHATSAPP_NOTIFIER.enabled():
+                return self._send_json(
+                    {"error": "WhatsApp webhook is not configured. Set WHATSAPP_WEBHOOK_URL."},
+                    status=HTTPStatus.SERVICE_UNAVAILABLE,
+                )
+
+            analytics = store.get_daily_analytics(restaurant_id=restaurant_id, date=date)
+            delivery = WHATSAPP_NOTIFIER.send_daily_summary(restaurant_id=restaurant_id, date=date, analytics=analytics)
+            status_code = HTTPStatus.OK if delivery["ok"] else HTTPStatus.BAD_GATEWAY
+            return self._send_json(
+                {
+                    "sent": delivery["ok"],
+                    "restaurantId": restaurant_id,
+                    "date": date,
+                    "analytics": analytics,
+                    "delivery": {
+                        "statusCode": delivery["statusCode"],
+                        "response": delivery["response"],
+                    },
+                    "messagePreview": delivery["message"],
+                },
+                status=status_code,
+            )
 
         if self.path == "/reservations":
             payload = self._read_json_body()

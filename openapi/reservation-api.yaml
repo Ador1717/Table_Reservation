@@ -309,6 +309,61 @@ paths:
               schema:
                 $ref: '#/components/schemas/DailyAnalytics'
 
+
+  /notifications/whatsapp/config:
+    get:
+      summary: Get WhatsApp summary delivery configuration state
+      description: Requires either `Authorization: Bearer <token>` or `X-Admin-Key`.
+      parameters:
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+        - in: header
+          name: X-Admin-Key
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: WhatsApp configuration state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WhatsAppConfigResponse'
+
+  /notifications/whatsapp/daily-summary:
+    post:
+      summary: Send daily reservation summary to WhatsApp
+      description: Requires either `Authorization: Bearer <token>` or `X-Admin-Key`.
+      parameters:
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+        - in: header
+          name: X-Admin-Key
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WhatsAppSummaryRequest'
+      responses:
+        '200':
+          description: Summary successfully sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WhatsAppSummaryResponse'
+        '503':
+          description: WhatsApp integration is not configured
+
 components:
   schemas:
     AvailabilitySlot:
@@ -497,3 +552,69 @@ components:
               type: string
           required: [username, role]
       required: [accessToken, tokenType, expiresAt, user]
+
+
+    AdminUser:
+      type: object
+      properties:
+        username:
+          type: string
+        role:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [username, role, createdAt]
+
+    CreateAdminUserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+
+    WhatsAppConfigResponse:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        recipient:
+          type: string
+          nullable: true
+      required: [enabled]
+
+    WhatsAppSummaryRequest:
+      type: object
+      properties:
+        restaurantId:
+          type: string
+        date:
+          type: string
+          format: date
+      required: [restaurantId, date]
+
+    WhatsAppSummaryResponse:
+      type: object
+      properties:
+        sent:
+          type: boolean
+        restaurantId:
+          type: string
+        date:
+          type: string
+          format: date
+        analytics:
+          $ref: '#/components/schemas/DailyAnalytics'
+        delivery:
+          type: object
+          properties:
+            statusCode:
+              type: integer
+            response:
+              type: string
+          required: [statusCode, response]
+        messagePreview:
+          type: string
+      required: [sent, restaurantId, date, analytics, delivery, messagePreview]
