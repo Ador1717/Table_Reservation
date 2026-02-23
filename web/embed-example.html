@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reservation Widget Embed Example</title>
+    <style>
+      body { font-family: Inter, system-ui, sans-serif; margin: 2rem auto; max-width: 960px; padding: 0 1rem; }
+      .host-box { border: 1px dashed #9ca3af; border-radius: 12px; padding: 1rem; background: #f9fafb; }
+      code { background: #f3f4f6; padding: 0.1rem 0.25rem; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <h1>Website Embed Example</h1>
+    <p>This page simulates your main website embedding the reservation plugin.</p>
+
+    <div class="host-box">
+      <div id="reservation-plugin-root"></div>
+    </div>
+
+    <script src="/web/plugin.js"></script>
+    <script>
+      ReservationWidget.mount({
+        target: '#reservation-plugin-root',
+        restaurantId: 'resto-main',
+        partySize: 2,
+        height: 820,
+      });
+    </script>
+  </body>
+</html>
