@@ -1,0 +1,620 @@
+openapi: 3.0.3
+info:
+  title: Reservation Platform API
+  version: 1.2.0
+  description: API-first contract for website booking plugin and future mobile apps.
+servers:
+  - url: https://api.example.com/v1
+paths:
+  /admin/login:
+    post:
+      summary: Authenticate admin user and create session token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminLoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminLoginResponse'
+        '401':
+          description: Invalid credentials
+
+
+  /admin/users:
+    get:
+      summary: List staff admin users
+      description: Requires admin authentication via bearer token or API key fallback.
+      parameters:
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+        - in: header
+          name: X-Admin-Key
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Staff users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdminUser'
+    post:
+      summary: Create staff admin user
+      description: Requires admin authentication via bearer token or API key fallback.
+      parameters:
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+        - in: header
+          name: X-Admin-Key
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAdminUserRequest'
+      responses:
+        '201':
+          description: Staff user created
+
+  /availability:
+    get:
+      summary: Get available reservation slots
+      parameters:
+        - in: query
+          name: restaurantId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: date
+          required: true
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: partySize
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Available slots
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  slots:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AvailabilitySlot'
+
+  /reservations:
+    get:
+      summary: List reservations
+      description: Requires either `Authorization: Bearer <token>` or `X-Admin-Key`.
+      parameters:
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+        - in: header
+          name: X-Admin-Key
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: restaurantId
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: date
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Reservation list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reservations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Reservation'
+    post:
+      summary: Create reservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReservationRequest'
+      responses:
+        '201':
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+
+  /reservations/{reservationId}:
+    patch:
+      summary: Update reservation status or details
+      description: Requires either `Authorization: Bearer <token>` or `X-Admin-Key`.
+      parameters:
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+        - in: header
+          name: X-Admin-Key
+          required: false
+          schema:
+            type: string
+        - in: path
+          name: reservationId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateReservationRequest'
+      responses:
+        '200':
+          description: Reservation updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+    delete:
+      summary: Cancel reservation
+      description: Requires either `Authorization: Bearer <token>` or `X-Admin-Key`.
+      parameters:
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+        - in: header
+          name: X-Admin-Key
+          required: false
+          schema:
+            type: string
+        - in: path
+          name: reservationId
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Reservation cancelled
+
+  /waitlist:
+    post:
+      summary: Join waitlist for a fully-booked time
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWaitlistEntryRequest'
+      responses:
+        '201':
+          description: Waitlist entry created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaitlistEntry'
+    get:
+      summary: List waiting entries
+      description: Requires either `Authorization: Bearer <token>` or `X-Admin-Key`.
+      parameters:
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+        - in: header
+          name: X-Admin-Key
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: restaurantId
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: date
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Waitlist entries currently waiting
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WaitlistEntry'
+
+  /analytics:
+    get:
+      summary: Daily analytics for operations dashboard
+      description: Requires either `Authorization: Bearer <token>` or `X-Admin-Key`.
+      parameters:
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+        - in: header
+          name: X-Admin-Key
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: restaurantId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: date
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Daily analytics summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailyAnalytics'
+
+
+  /notifications/whatsapp/config:
+    get:
+      summary: Get WhatsApp summary delivery configuration state
+      description: Requires either `Authorization: Bearer <token>` or `X-Admin-Key`.
+      parameters:
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+        - in: header
+          name: X-Admin-Key
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: WhatsApp configuration state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WhatsAppConfigResponse'
+
+  /notifications/whatsapp/daily-summary:
+    post:
+      summary: Send daily reservation summary to WhatsApp
+      description: Requires either `Authorization: Bearer <token>` or `X-Admin-Key`.
+      parameters:
+        - in: header
+          name: Authorization
+          required: false
+          schema:
+            type: string
+        - in: header
+          name: X-Admin-Key
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WhatsAppSummaryRequest'
+      responses:
+        '200':
+          description: Summary successfully sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WhatsAppSummaryResponse'
+        '503':
+          description: WhatsApp integration is not configured
+
+components:
+  schemas:
+    AvailabilitySlot:
+      type: object
+      properties:
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        available:
+          type: boolean
+      required: [startTime, endTime, available]
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: string
+        restaurantId:
+          type: string
+        guestName:
+          type: string
+        guestPhone:
+          type: string
+        guestEmail:
+          type: string
+          format: email
+        partySize:
+          type: integer
+        reservationAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [pending, confirmed, seated, completed, cancelled, no_show]
+        notes:
+          type: string
+      required: [id, restaurantId, guestName, partySize, reservationAt, status]
+
+    WaitlistEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        restaurantId:
+          type: string
+        guestName:
+          type: string
+        guestPhone:
+          type: string
+        guestEmail:
+          type: string
+          format: email
+        partySize:
+          type: integer
+        desiredAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [waiting, promoted, cancelled]
+        promotedReservationId:
+          type: string
+          nullable: true
+      required: [id, restaurantId, guestName, partySize, desiredAt, status]
+
+    CreateReservationRequest:
+      type: object
+      properties:
+        restaurantId:
+          type: string
+        guestName:
+          type: string
+        guestPhone:
+          type: string
+        guestEmail:
+          type: string
+          format: email
+        partySize:
+          type: integer
+          minimum: 1
+        reservationAt:
+          type: string
+          format: date-time
+        notes:
+          type: string
+      required: [restaurantId, guestName, partySize, reservationAt]
+
+    UpdateReservationRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, confirmed, seated, completed, cancelled, no_show]
+        notes:
+          type: string
+
+    CreateWaitlistEntryRequest:
+      type: object
+      properties:
+        restaurantId:
+          type: string
+        guestName:
+          type: string
+        guestPhone:
+          type: string
+        guestEmail:
+          type: string
+          format: email
+        partySize:
+          type: integer
+          minimum: 1
+        desiredAt:
+          type: string
+          format: date-time
+      required: [restaurantId, guestName, partySize, desiredAt]
+
+    DailyAnalytics:
+      type: object
+      properties:
+        restaurantId:
+          type: string
+        date:
+          type: string
+          format: date
+        totalReservations:
+          type: integer
+        totalCovers:
+          type: integer
+        completedReservations:
+          type: integer
+        cancelledReservations:
+          type: integer
+        noShowReservations:
+          type: integer
+        cancellationRate:
+          type: number
+          format: float
+        noShowRate:
+          type: number
+          format: float
+        waitlistWaiting:
+          type: integer
+        waitlistPromoted:
+          type: integer
+      required:
+        - restaurantId
+        - date
+        - totalReservations
+        - totalCovers
+        - completedReservations
+        - cancelledReservations
+        - noShowReservations
+        - cancellationRate
+        - noShowRate
+        - waitlistWaiting
+        - waitlistPromoted
+
+    AdminLoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+
+    AdminLoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        user:
+          type: object
+          properties:
+            username:
+              type: string
+            role:
+              type: string
+          required: [username, role]
+      required: [accessToken, tokenType, expiresAt, user]
+
+
+    AdminUser:
+      type: object
+      properties:
+        username:
+          type: string
+        role:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [username, role, createdAt]
+
+    CreateAdminUserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+
+    WhatsAppConfigResponse:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        recipient:
+          type: string
+          nullable: true
+      required: [enabled]
+
+    WhatsAppSummaryRequest:
+      type: object
+      properties:
+        restaurantId:
+          type: string
+        date:
+          type: string
+          format: date
+      required: [restaurantId, date]
+
+    WhatsAppSummaryResponse:
+      type: object
+      properties:
+        sent:
+          type: boolean
+        restaurantId:
+          type: string
+        date:
+          type: string
+          format: date
+        analytics:
+          $ref: '#/components/schemas/DailyAnalytics'
+        delivery:
+          type: object
+          properties:
+            statusCode:
+              type: integer
+            response:
+              type: string
+          required: [statusCode, response]
+        messagePreview:
+          type: string
+      required: [sent, restaurantId, date, analytics, delivery, messagePreview]
