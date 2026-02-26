@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reservation Admin Dashboard</title>
+    <link rel="stylesheet" href="/web/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Reservation Admin</h1>
+      <p class="subtitle">Manage bookings, waitlist, analytics, and staff users.</p>
+
+      <form id="admin-login-form" class="card inline-form">
+        <label>Username <input name="username" value="admin" required /></label>
+        <label>Password <input name="password" type="password" value="change-me-admin-password" required /></label>
+        <button type="submit">Login</button>
+        <span id="auth-status" class="auth-status">Using API key fallback until login.</span>
+      </form>
+
+      <form id="admin-filter-form" class="card inline-form">
+        <label>Restaurant ID <input name="restaurantId" value="resto-main" /></label>
+        <label>Date <input name="date" type="date" /></label>
+        <label>Admin API Key (fallback) <input name="adminKey" type="password" value="change-me-admin-key" /></label>
+        <button type="submit">Load Operations View</button>
+      </form>
+
+      <section class="card">
+        <h2>Reservations</h2>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Time</th>
+              <th>Name</th>
+              <th>Party</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-table-body"></tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>Waitlist (Waiting)</h2>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Desired Time</th>
+              <th>Name</th>
+              <th>Party</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="waitlist-table-body"></tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>Daily Analytics</h2>
+        <div id="analytics-grid" class="analytics-grid"></div>
+      </section>
+
+      <section class="card">
+        <h2>WhatsApp Daily Summary</h2>
+        <p class="subtitle">Send total daily reservations and important metrics to WhatsApp.</p>
+        <div class="inline-form">
+          <button id="send-whatsapp-summary" type="button">Send Daily Summary to WhatsApp</button>
+          <span id="whatsapp-status" class="auth-status"></span>
+        </div>
+      </section>
+
+      <section class="card" id="staff-management-section">
+        <h2>Staff Users</h2>
+        <form id="staff-create-form" class="inline-form">
+          <label>Username <input name="username" required /></label>
+          <label>Password <input name="password" type="password" required /></label>
+          <button type="submit">Create Staff User</button>
+        </form>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody id="staff-users-body"></tbody>
+        </table>
+      </section>
+
+      <pre id="admin-result" class="card result">Load reservations to begin.</pre>
+    </main>
+    <script src="/web/admin.js"></script>
+  </body>
+</html>

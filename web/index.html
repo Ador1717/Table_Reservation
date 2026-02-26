@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Restaurant Reservation Widget Demo</title>
+    <link rel="stylesheet" href="/web/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Reserve a Table</h1>
+      <p class="subtitle">Fork-style booking flow for your website plugin MVP.</p>
+
+      <form id="availability-form" class="card">
+        <h2>1) Check Availability</h2>
+        <label>Restaurant ID <input name="restaurantId" value="resto-main" required /></label>
+        <label>Date <input name="date" type="date" required /></label>
+        <label>Party Size <input name="partySize" type="number" min="1" value="2" required /></label>
+        <button type="submit">Check Slots</button>
+      </form>
+
+      <section class="card">
+        <h2>2) Select a Slot</h2>
+        <div id="slots" class="slots"></div>
+      </section>
+
+      <form id="reservation-form" class="card">
+        <h2>3) Confirm Reservation</h2>
+        <input type="hidden" name="restaurantId" value="resto-main" />
+        <label>Guest Name <input name="guestName" required /></label>
+        <label>Phone <input name="guestPhone" /></label>
+        <label>Email <input name="guestEmail" type="email" /></label>
+        <label>Party Size <input name="partySize" type="number" min="1" value="2" required /></label>
+        <label>Selected Time <input name="reservationAt" id="reservationAt" readonly required /></label>
+        <label>Notes <textarea name="notes" rows="3"></textarea></label>
+        <button type="submit">Reserve</button>
+      </form>
+
+      <form id="waitlist-form" class="card">
+        <h2>4) Join Waitlist if Full</h2>
+        <input type="hidden" name="restaurantId" value="resto-main" />
+        <label>Guest Name <input name="guestName" required /></label>
+        <label>Phone <input name="guestPhone" /></label>
+        <label>Email <input name="guestEmail" type="email" /></label>
+        <label>Party Size <input name="partySize" type="number" min="1" value="2" required /></label>
+        <label>Desired Time <input name="desiredAt" id="desiredAt" readonly required /></label>
+        <button type="submit">Join Waitlist</button>
+      </form>
+
+      <pre id="result" class="card result">Waiting for submission...</pre>
+    </main>
+    <script src="/web/widget.js"></script>
+  </body>
+</html>
